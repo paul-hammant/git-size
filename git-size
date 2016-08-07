@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Can only go ahead if a git repo
+not_a_git_repo=$(git status | grep "Not a git repository" | wc -l)
+if [ "$not_a_git_repo" -gt "0" ]; then
+  echo "This isn't a Git repository, can't run 'git size' here"
+  exit 1
+fi
+
+total_size=$(du -h -d0 . | cut -f 1)
+
+size_of_ignored="0B"
+if [ -f .gitignore ]; then
+  find . -type f -print | sed 's/.*/"&"/' | xargs git check-ignore > .ignored
+  if [ -s .ignored ]; then
+    size_of_ignored=$(cat .ignored | sed 's/.*/"&"/' | xargs du -d0 -ch | grep total | cut -f 1)
+  fi
+fi
+rm .ignored
+
+git ls-files > .checkout
+size_of_checkout=$(cat .checkout | sed 's/.*/"&"/' | xargs du -d0 -ch | grep total | cut -f 1)
+rm .checkout
+
+size_of_dot_git_folder=$(du -h -d0 .git | cut -f 1)
+
+echo "git size:"
+echo "  .git folder: $size_of_dot_git_folder"
+echo "  checkout: $size_of_checkout"
+echo "  ignored: $size_of_ignored"
+echo "  everything: $total_size"
