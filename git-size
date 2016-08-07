@@ -11,16 +11,16 @@ total_size=$(du -h -d0 . | cut -f 1)
 
 size_of_ignored="0B"
 if [ -f .gitignore ]; then
-  find . -type f -print | sed 's/.*/"&"/' | xargs git check-ignore > .ignored
-  if [ -s .ignored ]; then
-    size_of_ignored=$(cat .ignored | sed 's/.*/"&"/' | xargs du -d0 -ch | grep total | cut -f 1)
+  find . -type f -print | sed 's/.*/"&"/' | xargs git check-ignore > .gitsize_ignored
+  if [ -s .gitsize_ignored ]; then
+    size_of_ignored=$(cat .gitsize_ignored | sed 's/.*/"&"/' | xargs du -d0 -ch | grep total | cut -f 1)
   fi
+  rm .gitsize_ignored
 fi
-rm .ignored
 
-git ls-files > .checkout
-size_of_checkout=$(cat .checkout | sed 's/.*/"&"/' | xargs du -d0 -ch | grep total | cut -f 1)
-rm .checkout
+git ls-files > .gitsize_checkout
+size_of_checkout=$(cat .gitsize_checkout | sed 's/.*/"&"/' | xargs du -d0 -ch | grep total | cut -f 1)
+rm .gitsize_checkout
 
 size_of_dot_git_folder=$(du -h -d0 .git | cut -f 1)
 
