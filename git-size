@@ -1,5 +1,32 @@
 #!/bin/bash
 
+usage(){
+  echo "Usage:"
+  echo "  git size --csv"
+  echo "  --csv: output as csv format"
+  exit 1
+}
+
+csv_format="0"
+leftOver=""
+until [ -z $1 ]
+    do
+    if [ "$1" == "--csv" ]; then
+        csv_format="1"
+        shift
+    elif [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
+        usage
+    else
+        leftOver="${leftOver} $1"
+        shift
+    fi
+done
+
+if [ ! -z "${leftOver// }" ]; then
+    echo "Unrecognized params/options: $leftOver"
+    usage
+fi
+
 # Can only go ahead if a git repo
 not_a_git_repo=$(git status | grep "Not a git repository" | wc -l)
 if [ "$not_a_git_repo" -gt "0" ]; then
@@ -24,8 +51,13 @@ rm .gitsize_checkout
 
 size_of_dot_git_folder=$(du -h -d0 .git | cut -f 1)
 
-echo "git size:"
-echo "  .git folder: $size_of_dot_git_folder"
-echo "  checkout: $size_of_checkout"
-echo "  ignored: $size_of_ignored"
-echo "  everything: $total_size"
+if [ "$csv_format" -eq "0" ]; then
+  echo "git size:"
+  echo "  .git folder: $size_of_dot_git_folder"
+  echo "  checkout: $size_of_checkout"
+  echo "  ignored: $size_of_ignored"
+  echo "  everything: $total_size"
+else
+  echo "dot_git_folder,checkout,ignored,everything"
+  echo "$size_of_dot_git_folder,$size_of_checkout,$size_of_ignored,$total_size"
+fi
