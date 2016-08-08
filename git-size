@@ -2,28 +2,41 @@
 
 usage(){
   echo "Usage:"
-  echo "  git size --csv"
-  echo "  --csv: output as csv format"
+  echo "  git size --csv --csv-header --kilobytes DIRNAME"
+  echo "  DIRNAME is optional - defaults to current directory"
+  echo "  --csv or -c: output as csv format"
+  echo "  --csv-header or -H: header row for CSV output"
+  echo "  --kilobytes or -k: kilobyte blocks instead of human units (always for CSV)"
   exit 1
 }
 
+directory=$(pwd)
 csv_format="0"
 fmt="-h"
+csv_hdr="0"
 leftOver=""
 until [ -z $1 ]
     do
-    if [ "$1" == "--csv" ]; then
+    if [ "$1" == "--csv" ] || [ "$1" == "-c" ]; then
         csv_format="1"
         fmt="-k"
         shift
-    elif [ "$1" == "-k" ]; then
+    elif [ "$1" == "--kilobytes" ] || [ "$1" == "-k" ]; then
       fmt="-k"
+      shift
+    elif [ "$1" == "--csv-header" ] || [ "$1" == "-H" ]; then
+      csv_hdr="1"
       shift
     elif [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
         usage
     else
-        leftOver="${leftOver} $1"
+        directory=$(echo "$1" | sed 's/\.git$//')
+        directory=$(realpath "$directory")
         shift
+        if [ "$#" -gt "0" ]; then
+            leftOver="${leftOver} $@"
+            break
+        fi
     fi
 done
 
@@ -32,10 +45,12 @@ if [ ! -z "${leftOver// }" ]; then
     usage
 fi
 
+cd "$directory"
+
 # Can only go ahead if a git repo
-not_a_git_repo=$(git status | grep "Not a git repository" | wc -l)
+not_a_git_repo=$(git status . | grep "Not a git repository" | wc -l)
 if [ "$not_a_git_repo" -gt "0" ]; then
-  echo "This isn't a Git repository, can't run 'git size' here"
+  echo "Directory $directory isn't a Git repository/clone, can't run 'git size' there"
   exit 1
 fi
 
@@ -62,12 +77,14 @@ if [ "$csv_format" -eq "0" ]; then
   else
     format=""
   fi
-  echo "git size${format}:"
+  echo "$directory: git size${format}:"
   echo "  .git folder: $size_of_dot_git_folder"
   echo "  checkout: $size_of_checkout"
   echo "  ignored: $size_of_ignored"
   echo "  everything: $total_size"
 else
-  echo "dot_git_folder,checkout,ignored,everything"
-  echo "$size_of_dot_git_folder,$size_of_checkout,$size_of_ignored,$total_size"
+  if [ "$csv_hdr" -eq "1" ]; then
+      echo "directory_name, dot_git_folder_size, checkout_size, ignored_size, everything_size"
+  fi
+  echo "$directory, $size_of_dot_git_folder, $size_of_checkout, $size_of_ignored, $total_size"
 fi
