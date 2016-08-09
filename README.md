@@ -23,9 +23,34 @@ git size:
   everything:  36M
 ```
 
-If you'd done the --no-checkout, the 29MB would have been saved.
+If you'd done the clone with --no-checkout, the 29MB would have been saved, and the 36M would be closer to 6.7M.
 
-If you ran a build, 0B would be replaced with a few megabytes.
+If you ran a build, 0B would be replaced with a few megabytes, as all that stuff isn't to be checked in (it is ignored).
+
+## CSV output
+
+```
+$ git clone git@github.com:git/git.git
+# [...]
+$ cd git
+$ git size --csv
+/scm/oss/git, 6812, 30176, 0, 36988
+$ git size --csv --csv-headers
+directory_name, dot_git_folder_size, checkout_size, ignored_size, everything_size
+/scm/oss/git, 6812, 30176, 0, 36988
+```
+
+## help
+
+```
+$ git size --help
+Usage:
+  git size --csv --csv-header --kilobytes DIRNAME
+  DIRNAME is optional - defaults to current directory
+  --csv or -c: output as csv format
+  --csv-header or -H: header row for CSV output
+  --kilobytes or -k: kilobyte blocks instead of human units (always for CSV)
+```
 
 # LICENSE
 

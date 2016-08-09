@@ -24,7 +24,7 @@ until [ -z $1 ]
     elif [ "$1" == "--kilobytes" ] || [ "$1" == "-k" ]; then
       fmt="-k"
       shift
-    elif [ "$1" == "--csv-header" ] || [ "$1" == "-H" ]; then
+    elif [ "$1" == "--csv-headers" ] || [ "$1" == "-H" ]; then
       csv_hdr="1"
       shift
     elif [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
