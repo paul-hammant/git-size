@@ -58,7 +58,7 @@ total_size=$(du $fmt -d0 . | cut -f 1)
 
 size_of_ignored="0"
 if [ -f .gitignore ]; then
-  find . -type f -print | sed 's/.*/"&"/' | xargs git check-ignore > .gitsize_ignored
+  find . -type f -print0 | sed 's/.*/"&"/' | git check-ignore -z --stdin > .gitsize_ignored
   if [ -s .gitsize_ignored ]; then
     size_of_ignored=$(cat .gitsize_ignored | sed 's/.*/"&"/' | xargs du -d0 -c $fmt | grep total | cut -f 1)
   fi
@@ -86,5 +86,5 @@ else
   if [ "$csv_hdr" -eq "1" ]; then
       echo "directory_name, dot_git_folder_size, checkout_size, ignored_size, everything_size"
   fi
-  echo "$directory, $size_of_dot_git_folder, $size_of_checkout, $size_of_ignored, $total_size"
+  echo "\"$directory\", $size_of_dot_git_folder, $size_of_checkout, $size_of_ignored, $total_size"
 fi
