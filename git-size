@@ -9,7 +9,8 @@ usage(){
   echo "  --kilobytes or -k: kilobyte blocks instead of human units (always for CSV)"
   echo ""
   echo "  Want recursive? How about:"
-  echo "  find . -type f -name .git -exec git size --csv {} \;"
+  echo "  find . -type d -name .git -exec git size --csv {} \;"
+  echo "  (don't worry about a /.git suffix, this will work as you'd wish)"
   exit 1
 }
 
