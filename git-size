@@ -7,6 +7,9 @@ usage(){
   echo "  --csv or -c: output as csv format"
   echo "  --csv-header or -H: header row for CSV output"
   echo "  --kilobytes or -k: kilobyte blocks instead of human units (always for CSV)"
+  echo ""
+  echo "  Want recursive? How about:"
+  echo "  find . -type f -name .git -exec git size --csv {} \;"
   exit 1
 }
 
@@ -58,15 +61,16 @@ total_size=$(du $fmt -d0 . | cut -f 1)
 
 size_of_ignored="0"
 if [ -f .gitignore ]; then
-  find . -type f -print0 | sed 's/.*/"&"/' | git check-ignore -z --stdin > .gitsize_ignored
+  # the perl one-liner removes files from stdin that don't exist. Should be a unix command 'pipefilesexist'
+  find . -type f -print0 | sed 's/.*/"&"/' | git check-ignore -z --stdin | sed 's/.*/"&"/' | perl -ne 'chomp(); if (-e $_) {print "$_\n"}' > .gitsize_ignored
   if [ -s .gitsize_ignored ]; then
-    size_of_ignored=$(cat .gitsize_ignored | sed 's/.*/"&"/' | xargs du -d0 -c $fmt | grep total | cut -f 1)
+    size_of_ignored=$(cat .gitsize_ignored | sed 's/.*/"&"/' | xargs -s 600000 du -d0 -c $fmt | grep total | cut -f 1)
   fi
   rm .gitsize_ignored
 fi
 
-git ls-files > .gitsize_checkout
-size_of_checkout=$(cat .gitsize_checkout | sed 's/.*/"&"/' | xargs du -d0 -c $fmt | grep total | cut -f 1)
+git ls-files | sed 's/.*/"&"/' | perl -ne 'chomp(); if (-e $_) {print "$_\n"}' > .gitsize_checkout
+size_of_checkout=$(cat .gitsize_checkout | xargs -s 600000 du -d0 -c $fmt | grep total | cut -f 1)
 rm .gitsize_checkout
 
 size_of_dot_git_folder=$(du $fmt -d0 .git | cut -f 1)
