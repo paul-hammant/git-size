@@ -64,16 +64,16 @@ if [ -f .gitignore ]; then
   # the perl one-liner removes files from stdin that don't exist. Should be a unix command 'pipefilesexist'
   find . -type f -print0 | git check-ignore -z --stdin | perl -ne 'chomp(); if (-e $_) {print "$_\n"}' > .gitsize_ignored
   if [ -s .gitsize_ignored ]; then
-    size_of_ignored=$(cat .gitsize_ignored | sed 's/.*/"&"/' | xargs -s 6000000 du -d0 -c $fmt | grep total | cut -f 1)
+    size_of_ignored=$(cat .gitsize_ignored | sed 's/.*/"&"/' | xargs -s 6000000 du -d0 -c $fmt | tail -1 | cut -f 1)
   fi
   rm .gitsize_ignored
 fi
 
 git ls-files | perl -ne 'chomp(); if (-e $_) {print "$_\n"}' > .gitsize_checkout
-size_of_checkout=$(cat .gitsize_checkout | sed 's/.*/"&"/' | xargs -s 6000000 du -d0 -c $fmt | grep total | cut -f 1)
+size_of_checkout=$(cat .gitsize_checkout | sed 's/.*/"&"/' | xargs -s 6000000 du -d0 -c $fmt | tail -1 | cut -f 1)
 rm .gitsize_checkout
 
-size_of_dot_git_folder=$(du $fmt -d0 .git | cut -f 1)
+size_of_dot_git_folder=$(du $fmt -d0 .git | tail -1 | cut -f 1)
 
 if [ "$csv_format" -eq "0" ]; then
   if [ $fmt == "-k" ]; then
