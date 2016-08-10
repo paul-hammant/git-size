@@ -51,7 +51,7 @@ fi
 cd "$directory"
 
 # Can only go ahead if a git repo
-not_a_git_repo=$(git status . | grep "Not a git repository" | wc -l)
+not_a_git_repo=$(git status . 2>&1 | grep "Not a git repository" | wc -l)
 if [ "$not_a_git_repo" -gt "0" ]; then
   echo "Directory $directory isn't a Git repository/clone, can't run 'git size' there"
   exit 1
