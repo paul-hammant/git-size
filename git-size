@@ -8,10 +8,6 @@ usage(){
   echo "  --csv-headers or -H: header row for CSV output"
   echo "  --recursive or -r: recurse looking for git clones/repos (always set for CSV output)"
   echo "  --kilobytes or -k: kilobyte blocks instead of human units (always set for CSV output)"
-  echo ""
-  echo "  Want recursive? How about:"
-  echo "  find . -type d -name .git -exec git size --csv {} \;"
-  echo "  (don't worry about a '/.git' suffix, that gets trimmed off, this works as you'd want)"
   exit 1
 }
 
@@ -44,7 +40,7 @@ directory=$(pwd)
 csv_format="0"
 fmt="-h"
 recursive="0"
-csv_hdr="0"
+csv_hdrs="0"
 leftOver=""
 until [ -z $1 ]
     do
@@ -59,7 +55,7 @@ until [ -z $1 ]
       recursive="1"
       shift
     elif [ "$1" == "--csv-headers" ] || [ "$1" == "-H" ]; then
-      csv_hdr="1"
+      csv_hdrs="1"
       shift
     elif [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
         usage
@@ -85,8 +81,11 @@ fi
 
 cd "$directory"
 if [ "$recursive" -eq "1" ]; then
-    find . -type d -name .git -exec git size --csv {} \;
-
+    op=$(find . -type d -name .git -exec /scm/oss/git-size/git-size --csv --kilobytes {} \;)
+    if [ "csv_hdrs" -eq "1" ]; then
+        echo "directory_name,dot_git_folder_size,checkout_size,ignored_size,everything_size"
+    fi
+    echo "$op"
 else
     # Can only go ahead if a git repo
     not_a_git_repo=$(git status . 2>&1 | grep "Not a git repository" | wc -l)
@@ -127,7 +126,7 @@ else
         echo "  ignored: $size_of_ignored"
         echo "  everything: $total_size"
     else
-        if [ "$csv_hdr" -eq "1" ]; then
+        if [ "$csv_hdrs" -eq "1" ]; then
             echo "directory_name,dot_git_folder_size,checkout_size,ignored_size,everything_size"
         fi
         echo "\"$directory\",$size_of_dot_git_folder,$size_of_checkout,$size_of_ignored,$total_size"
