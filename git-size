@@ -1,7 +1,7 @@
 #!/bin/bash
 
 usage(){
-  echo "Usage (v1.0.5):"
+  echo "Usage (v1.0.6):"
   echo "  git size --csv --csv-headers --kilobytes DIRNAME"
   echo "  DIRNAME is optional - defaults to current directory"
   echo "  --csv or -c: output as csv format"
@@ -129,23 +129,20 @@ if [ ! -z "${leftOver// }" ]; then
 fi
 
 if [ "$recursive" -eq "1" ]; then
-    csv_hdrs_orig="$csv_hdrs"
-    csv_hdrs="0"
     csv_format="1"
     fmt="-k"
-
+    if [ "$csv_hdrs" -eq "1" ]; then
+        echo "directory_name,dot_git_folder_size,checkout_size,ignored_size,everything_size"
+        csv_hdrs="0"
+    fi
     git_folders=$(find "$directory" -type d -name .git | sed 's/\.git$//' | sed 's#^\./##')
-    op=""
     while read -r d2; do
         if [[ !  -z  "$d2"  ]]; then
             d2op=$(process "$d2")
-            op=$(echo "${op}$d2op")
+            echo "$d2op"
         fi
     done <<< "$git_folders"
-    if [ "csv_hdrs_orig" -eq "1" ]; then
-        echo "directory_name,dot_git_folder_size,checkout_size,ignored_size,everything_size"
-    fi
-    echo "$op"
 else
+  # non-recursive
   process $directory
 fi
