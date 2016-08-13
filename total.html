@@ -2,26 +2,31 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Sequences sunburst</title>
+    <title>Git File Sizes (total)</title>
     <script src="//d3js.org/d3.v3.min.js"></script>
+    <script type="text/javascript">
+        var ccol = 4;
+    </script>
     <link rel="stylesheet" type="text/css"
           href="https://fonts.googleapis.com/css?family=Open+Sans:400,600">
     <link rel="stylesheet" type="text/css" href="sequences.css"/>
 </head>
 <body>
-<p>Forked from http://bl.ocks.org/kerryrodden/7090426 (https://gist.github.com/kerryrodden/7090426/)</p><br/>
 <div id="main">
+    <span>
+        <input type="radio" name="sizeChoice" id="col4" checked> Total |
+        <input type="radio" name="sizeChoice" id="col1"> .git folder |
+        <input type="radio" name="sizeChoice" id="col2"> Checked Out |
+        <input type="radio" name="sizeChoice" id="col3"> Ignored
+    </span>
+    <br/><br/>
     <div id="sequence"></div>
     <div id="chart">
         <div id="explanation" style="visibility: hidden;">
             <span id="percentage"></span><br/>
-            of visits begin with this sequence of pages
+            of disk space taken by Git repos/clones (everything, including Git history)
         </div>
     </div>
-</div>
-<div id="sidebar">
-    <input type="checkbox" id="togglelegend"> Legend<br/>
-    <div id="legend" style="visibility: hidden;"></div>
 </div>
 <script type="text/javascript" src="sequences.js"></script>
 <script type="text/javascript">

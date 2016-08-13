@@ -1,3 +1,6 @@
+var hash = window.location.hash.substring(1);
+lines = atob(hash);
+
 // Dimensions of sunburst.
 var width = 750;
 var height = 600;
@@ -5,7 +8,7 @@ var radius = Math.min(width, height) / 2;
 
 // Breadcrumb dimensions: width, height, spacing, width of tip/tail.
 var b = {
-  w: 75, h: 30, s: 3, t: 10
+  w: 175, h: 30, s: 3, t: 10
 };
 
 // Mapping of step names to colors.
@@ -19,7 +22,7 @@ var colors = {
 };
 
 // Total size of all segments; we set this later, after loading the data.
-var totalSize = 0; 
+var totalSize = 0;
 
 var vis = d3.select("#chart").append("svg:svg")
     .attr("width", width)
@@ -38,13 +41,46 @@ var arc = d3.svg.arc()
     .innerRadius(function(d) { return Math.sqrt(d.y); })
     .outerRadius(function(d) { return Math.sqrt(d.y + d.dy); });
 
-// Use d3.text and d3.csv.parseRows so that we do not need to have a header
-// row, and can receive the csv as an array of arrays.
-d3.text("visit-sequences.csv", function(text) {
-  var csv = d3.csv.parseRows(text);
-  var json = buildHierarchy(csv);
+var cache = [];
+var circularBuster = function(key, value) {
+
+  if (typeof value === 'object' && value !== null) {
+    if (cache.indexOf(value) !== -1) {
+      // Circular reference found, discard key
+      return;
+    }
+    // Store value in our collection
+    cache.push(value);
+  }
+  return value;
+};
+
+
+function doit(ccol) {
+  var csv = d3.csv.parseRows(lines);
+  var json = buildHierarchy(csv, ccol);
   createVisualization(json);
+  console.log(JSON.stringify(json, circularBuster));
+}
+
+doit(ccol);
+
+d3.select("#col1").on("click", function() {
+  window.location.href = "/gitfolder.html#" + hash
 });
+
+d3.select("#col2").on("click", function() {
+  window.location.href = "/checkout.html#" + hash
+});
+
+d3.select("#col3").on("click", function() {
+  window.location.href = "/ignored.html#" + hash
+});
+
+d3.select("#col4").on("click", function() {
+  window.location.href = "/total.html#" + hash
+});
+
 
 // Main function to draw and set up the visualization, once we have the data.
 function createVisualization(json) {
@@ -81,7 +117,7 @@ function createVisualization(json) {
 
   // Get total size of the tree = value of root node from partition.
   totalSize = path.node().__data__.value;
- };
+ }
 
 // Fade all but the current sequence, and show it in the breadcrumb trail.
 function mouseover(d) {
@@ -222,7 +258,7 @@ function drawLegend() {
 
   // Dimensions of legend item: width, height, spacing, radius of rounded rect.
   var li = {
-    w: 75, h: 30, s: 3, r: 3
+    w: 175, h: 30, s: 3, r: 3
   };
 
   var legend = d3.select("#legend").append("svg:svg")
@@ -262,17 +298,17 @@ function toggleLegend() {
 
 // Take a 2-column CSV and transform it into a hierarchical structure suitable
 // for a partition layout. The first column is a sequence of step names, from
-// root to leaf, separated by hyphens. The second column is a count of how 
+// root to leaf, separated by hyphens. The second column is a count of how
 // often that sequence occurred.
-function buildHierarchy(csv) {
+function buildHierarchy(csv, ccol) {
   var root = {"name": "root", "children": []};
   for (var i = 0; i < csv.length; i++) {
     var sequence = csv[i][0];
-    var size = +csv[i][1];
+    var size = +csv[i][ccol];
     if (isNaN(size)) { // e.g. if this is a header row
       continue;
     }
-    var parts = sequence.split("-");
+    var parts = sequence.replace(/^\//,"").split("/");
     var currentNode = root;
     for (var j = 0; j < parts.length; j++) {
       var children = currentNode["children"];
@@ -296,10 +332,10 @@ function buildHierarchy(csv) {
  	currentNode = childNode;
       } else {
  	// Reached the end of the sequence; create a leaf node.
- 	childNode = {"name": nodeName, "size": size};
+ 	childNode = {"name": nodeName, "size": size, "git_folder": csv[i][1], "checkout": csv[i][2], "ignored": csv[i][3]};
  	children.push(childNode);
       }
     }
   }
   return root;
-};
+}
