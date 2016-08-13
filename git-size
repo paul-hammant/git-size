@@ -83,8 +83,10 @@ if [ -f .gitignore ]; then
   # the perl one-liner removes files from stdin that don't exist. Should be a unix command 'pipefilesexist'
   ignored=$(find . -type f | sed 's/.*/"&"/' | git check-ignore --stdin | perl -ne 'chomp(); if (-e $_) {print "$_\n"}' | sed 's#\./##' | sed 's/ /\ /')
   while read -r line; do
-    fsize=$(du -k -d0 "$line" | tail -1 | cut -f 1)
-    size_of_ignored=$((size_of_ignored + fsize))
+    if [[ !  -z  "$line"  ]]; then
+      fsize=$(du -k -d0 "$line" | tail -1 | cut -f 1)
+      size_of_ignored=$((size_of_ignored + fsize))
+    fi
   done <<< "$ignored"
   if [ "$fmt" == "-h" ]; then
     size_of_ignored=$(kbytes_for_humans $size_of_ignored)
@@ -94,8 +96,10 @@ fi
 size_of_checkout="0"
 checkout=$(git ls-files | perl -ne 'chomp(); if (-e $_) {print "$_\n"}')
 while read -r line; do
-  fsize=$(du -k -d0 "$line" | tail -1 | cut -f 1)
-  size_of_checkout=$((size_of_checkout + fsize))
+  if [[ !  -z  "$line"  ]]; then
+    fsize=$(du -k -d0 "$line" | tail -1 | cut -f 1)
+    size_of_checkout=$((size_of_checkout + fsize))
+  fi
 done <<< "$checkout"
 if [ "$fmt" == "-h" ]; then
   size_of_checkout=$(kbytes_for_humans $size_of_checkout)
