@@ -17,7 +17,8 @@ usage(){
 function kbytes_for_humans {
     local -i kbytes=$1;
     if [[ $kbytes -lt 1048576 ]]; then
-        echo "$(( (kbytes + 1023)/1024 ))M"
+        megs=$(echo "scale=1; $kbytes / 1024" | bc)
+        echo "${megs}M"
     else
         echo "$(( (kbytes + 1048575)/1048576 ))G"
     fi
