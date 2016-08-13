@@ -35,6 +35,55 @@ function sum_files {
     echo $ssize
 }
 
+process () {
+    # Can only go ahead if a git repo
+    cd "$1"
+    not_a_git_repo=$(git status . 2>&1 | grep "Not a git repository" | wc -l)
+    if [ "$not_a_git_repo" -gt "0" ]; then
+        echo "Directory $1 isn't a Git repository/clone, can't run 'git size' there"
+        exit 1
+    fi
+
+    total_size=$(du $fmt -d0 . | cut -f 1 | sed 's/\.0//')
+
+    size_of_ignored="0"
+    if [ -f .gitignore ]; then
+        # the perl one-liner removes files from stdin that don't exist. Should be a unix command 'pipefilesexist'
+        ignored=$(find . -type f | sed 's/.*/"&"/' | git check-ignore --stdin | perl -ne 'chomp(); if (-e $_) {print "$_\n"}' | sed 's#^\./##' | sed 's/ /\ /')
+        size_of_ignored=$(sum_files "$ignored")
+        if [ "$fmt" == "-h" ]; then
+            size_of_ignored=$(kbytes_for_humans $size_of_ignored)
+        fi
+    fi
+
+    checkout=$(git ls-files | perl -ne 'chomp(); if (-e $_) {print "$_\n"}')
+    size_of_checkout=$(sum_files "$checkout")
+    if [ "$fmt" == "-h" ]; then
+        size_of_checkout=$(kbytes_for_humans $size_of_checkout)
+    fi
+
+    size_of_dot_git_folder=$(du $fmt -d0 .git | tail -1 | cut -f 1 | sed 's/\.0//')
+
+    if [ "$csv_format" -eq "0" ]; then
+        if [ $fmt == "-k" ]; then
+            format=" (KB)"
+        else
+            format=""
+        fi
+        echo "$1: git size${format}:"
+        echo "  .git folder: $size_of_dot_git_folder"
+        echo "  checkout: $size_of_checkout"
+        echo "  ignored: $size_of_ignored"
+        echo "  everything: $total_size"
+    else
+        if [ "$csv_hdrs" -eq "1" ]; then
+            echo "directory_name,dot_git_folder_size,checkout_size,ignored_size,everything_size"
+        fi
+        echo "\"$1\",$size_of_dot_git_folder,$size_of_checkout,$size_of_ignored,$total_size"
+    fi
+}
+
+
 
 directory=$(pwd)
 csv_format="0"
@@ -60,7 +109,7 @@ until [ -z $1 ]
     elif [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
         usage
     else
-        directory=$(echo "$1" | sed 's/\.git$//')
+        directory=$(echo "$1")
         if [ ! -d "$directory" ]; then
             echo "Error, directory $directory not found"
             usage
@@ -79,56 +128,24 @@ if [ ! -z "${leftOver// }" ]; then
     usage
 fi
 
-cd "$directory"
 if [ "$recursive" -eq "1" ]; then
-    op=$(find . -type d -name .git -exec /scm/oss/git-size/git-size --csv --kilobytes {} \;)
-    if [ "csv_hdrs" -eq "1" ]; then
+    csv_hdrs_orig="$csv_hdrs"
+    csv_hdrs="0"
+    csv_format="1"
+    fmt="-k"
+
+    git_folders=$(find "$directory" -type d -name .git | sed 's/\.git$//' | sed 's#^\./##')
+    op=""
+    while read -r d2; do
+        if [[ !  -z  "$d2"  ]]; then
+            d2op=$(process "$d2")
+            op=$(echo "${op}$d2op")
+        fi
+    done <<< "$git_folders"
+    if [ "csv_hdrs_orig" -eq "1" ]; then
         echo "directory_name,dot_git_folder_size,checkout_size,ignored_size,everything_size"
     fi
     echo "$op"
 else
-    # Can only go ahead if a git repo
-    not_a_git_repo=$(git status . 2>&1 | grep "Not a git repository" | wc -l)
-    if [ "$not_a_git_repo" -gt "0" ]; then
-        echo "Directory $directory isn't a Git repository/clone, can't run 'git size' there"
-        exit 1
-    fi
-
-    total_size=$(du $fmt -d0 . | cut -f 1 | sed 's/\.0//')
-
-    size_of_ignored="0"
-    if [ -f .gitignore ]; then
-        # the perl one-liner removes files from stdin that don't exist. Should be a unix command 'pipefilesexist'
-        ignored=$(find . -type f | sed 's/.*/"&"/' | git check-ignore --stdin | perl -ne 'chomp(); if (-e $_) {print "$_\n"}' | sed 's#\./##' | sed 's/ /\ /')
-        size_of_ignored=$(sum_files "$ignored")
-        if [ "$fmt" == "-h" ]; then
-            size_of_ignored=$(kbytes_for_humans $size_of_ignored)
-        fi
-    fi
-
-    checkout=$(git ls-files | perl -ne 'chomp(); if (-e $_) {print "$_\n"}')
-    size_of_checkout=$(sum_files "$checkout")
-    if [ "$fmt" == "-h" ]; then
-        size_of_checkout=$(kbytes_for_humans $size_of_checkout)
-    fi
-
-    size_of_dot_git_folder=$(du $fmt -d0 .git | tail -1 | cut -f 1 | sed 's/\.0//')
-
-    if [ "$csv_format" -eq "0" ]; then
-        if [ $fmt == "-k" ]; then
-            format=" (KB)"
-        else
-            format=""
-        fi
-        echo "$directory: git size${format}:"
-        echo "  .git folder: $size_of_dot_git_folder"
-        echo "  checkout: $size_of_checkout"
-        echo "  ignored: $size_of_ignored"
-        echo "  everything: $total_size"
-    else
-        if [ "$csv_hdrs" -eq "1" ]; then
-            echo "directory_name,dot_git_folder_size,checkout_size,ignored_size,everything_size"
-        fi
-        echo "\"$directory\",$size_of_dot_git_folder,$size_of_checkout,$size_of_ignored,$total_size"
-    fi
+  process $directory
 fi
