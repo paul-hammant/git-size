@@ -14,15 +14,15 @@ usage(){
 function kbytes_for_humans {
     local -i kbytes=$1;
     if [[ $kbytes -lt 1024 ]]; then
-       echo "${kbytes}K"
+        echo "${kbytes}K"
     elif [[ $kbytes -lt 1048576 ]]; then
         megs=$(echo "scale=1; $kbytes / 1024" | bc | sed 's/\.0//')
         echo "${megs}M"
     else
-       gigs=$(echo "scale=1; $kbytes / (1024^2)" | bc | sed 's/\.0//')
-       echo "${gigs}G"
+        gigs=$(echo "scale=1; $kbytes / (1024^2)" | bc | sed 's/\.0//')
+        echo "${gigs}G"
     fi
-    }
+}
 
 function sum_files {
     ssize="0"
@@ -98,14 +98,14 @@ until [ -z $1 ]
         fmt="-k"
         shift
     elif [ "$1" == "--kilobytes" ] || [ "$1" == "-k" ]; then
-      fmt="-k"
-      shift
+        fmt="-k"
+        shift
     elif [ "$1" == "--recursive" ] || [ "$1" == "-r" ]; then
-      recursive="1"
-      shift
+        recursive="1"
+        shift
     elif [ "$1" == "--csv-headers" ] || [ "$1" == "-H" ]; then
-      csv_hdrs="1"
-      shift
+        csv_hdrs="1"
+        shift
     elif [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
         usage
     else
