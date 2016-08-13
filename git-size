@@ -1,16 +1,16 @@
 #!/bin/bash
 
 usage(){
-  echo "Usage:"
+  echo "Usage (v1.0.5):"
   echo "  git size --csv --csv-headers --kilobytes DIRNAME"
   echo "  DIRNAME is optional - defaults to current directory"
   echo "  --csv or -c: output as csv format"
   echo "  --csv-headers or -H: header row for CSV output"
-  echo "  --kilobytes or -k: kilobyte blocks instead of human units (always for CSV)"
+  echo "  --kilobytes or -k: kilobyte blocks instead of human units (always set for CSV output)"
   echo ""
   echo "  Want recursive? How about:"
   echo "  find . -type d -name .git -exec git size --csv {} \;"
-  echo "  (don't worry about a /.git suffix, this will work as you'd wish)"
+  echo "  (don't worry about a '/.git' suffix, that gets trimmed off, this works as you'd want)"
   exit 1
 }
 
