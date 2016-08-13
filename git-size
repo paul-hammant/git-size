@@ -14,6 +14,16 @@ usage(){
   exit 1
 }
 
+function kbytes_for_humans {
+    local -i kbytes=$1;
+    if [[ $kbytes -lt 1048576 ]]; then
+        echo "$(( (kbytes + 1023)/1024 ))M"
+    else
+        echo "$(( (kbytes + 1048575)/1048576 ))G"
+    fi
+}
+
+
 directory=$(pwd)
 csv_format="0"
 fmt="-h"
@@ -69,7 +79,7 @@ if [ -f .gitignore ]; then
     size_of_ignored=$((size_of_ignored + fsize))
   done <<< "$ignored"
   if [ "$fmt" == "-h" ]; then
-    size_of_ignored=$(echo "${size_of_ignored}K")
+    size_of_ignored=$(kbytes_for_humans $size_of_ignored)
   fi
 fi
 
@@ -80,7 +90,7 @@ while read -r line; do
   size_of_checkout=$((size_of_checkout + fsize))
 done <<< "$checkout"
 if [ "$fmt" == "-h" ]; then
-  size_of_checkout=$(echo "${size_of_checkout}K")
+  size_of_checkout=$(kbytes_for_humans $size_of_checkout)
 fi
 size_of_dot_git_folder=$(du $fmt -d0 .git | tail -1 | cut -f 1)
 
