@@ -2,10 +2,10 @@
 
 usage(){
   echo "Usage:"
-  echo "  git size --csv --csv-header --kilobytes DIRNAME"
+  echo "  git size --csv --csv-headers --kilobytes DIRNAME"
   echo "  DIRNAME is optional - defaults to current directory"
   echo "  --csv or -c: output as csv format"
-  echo "  --csv-header or -H: header row for CSV output"
+  echo "  --csv-headers or -H: header row for CSV output"
   echo "  --kilobytes or -k: kilobyte blocks instead of human units (always for CSV)"
   echo ""
   echo "  Want recursive? How about:"
@@ -49,6 +49,10 @@ until [ -z $1 ]
         usage
     else
         directory=$(echo "$1" | sed 's/\.git$//')
+        if [ ! -d "$directory" ]; then
+            echo "Error, directory $directory not found"
+            usage
+        fi
         directory=$(realpath "$directory")
         shift
         if [ "$#" -gt "0" ]; then
@@ -112,7 +116,7 @@ if [ "$csv_format" -eq "0" ]; then
   echo "  everything: $total_size"
 else
   if [ "$csv_hdr" -eq "1" ]; then
-      echo "directory_name, dot_git_folder_size, checkout_size, ignored_size, everything_size"
+      echo "directory_name,dot_git_folder_size,checkout_size,ignored_size,everything_size"
   fi
-  echo "\"$directory\", $size_of_dot_git_folder, $size_of_checkout, $size_of_ignored, $total_size"
+  echo "\"$directory\",$size_of_dot_git_folder,$size_of_checkout,$size_of_ignored,$total_size"
 fi
