@@ -16,11 +16,14 @@ usage(){
 
 function kbytes_for_humans {
     local -i kbytes=$1;
-    if [[ $kbytes -lt 1048576 ]]; then
-        megs=$(echo "scale=1; $kbytes / 1024" | bc)
+    if [[ $kbytes -lt 1024 ]]; then
+       echo "${kbytes}K"
+    elif [[ $kbytes -lt 1048576 ]]; then
+        megs=$(echo "scale=1; $kbytes / 1024" | bc | sed 's/\.0//')
         echo "${megs}M"
     else
-        echo "$(( (kbytes + 1048575)/1048576 ))G"
+       gigs=$(echo "scale=1; $kbytes / (1024^2)" | bc | sed 's/\.0//')
+       echo "${gigs}G"
     fi
 }
 
@@ -69,7 +72,7 @@ if [ "$not_a_git_repo" -gt "0" ]; then
   exit 1
 fi
 
-total_size=$(du $fmt -d0 . | cut -f 1)
+total_size=$(du $fmt -d0 . | cut -f 1 | sed 's/\.0//')
 
 size_of_ignored="0"
 if [ -f .gitignore ]; then
@@ -93,7 +96,8 @@ done <<< "$checkout"
 if [ "$fmt" == "-h" ]; then
   size_of_checkout=$(kbytes_for_humans $size_of_checkout)
 fi
-size_of_dot_git_folder=$(du $fmt -d0 .git | tail -1 | cut -f 1)
+
+size_of_dot_git_folder=$(du $fmt -d0 .git | tail -1 | cut -f 1 | sed 's/\.0//')
 
 if [ "$csv_format" -eq "0" ]; then
   if [ $fmt == "-k" ]; then
