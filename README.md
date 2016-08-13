@@ -16,10 +16,10 @@ $ git clone git@github.com:git/git.git
 # [...]
 $ cd git
 $ git size
-git size:
+/scm/oss/git: git size:
   .git folder: 6.7M
-  checkout:  29M
-  ignored: 0B
+  checkout: 29.4M
+  ignored: 0K
   everything:  36M
 ```
 
@@ -36,20 +36,24 @@ $ cd git
 $ git size --csv
 /scm/oss/git, 6812, 30176, 0, 36988
 $ git size --csv --csv-headers
-directory_name, dot_git_folder_size, checkout_size, ignored_size, everything_size
-/scm/oss/git, 6812, 30176, 0, 36988
+directory_name,dot_git_folder_size,checkout_size,ignored_size,everything_size
+/scm/oss/git,6812,30176,0,36988
 ```
 
 ## help
 
 ```
 $ git size --help
-Usage:
-  git size --csv --csv-header --kilobytes DIRNAME
+Usage (v1.0.5):
+  git size --csv --csv-headers --kilobytes DIRNAME
   DIRNAME is optional - defaults to current directory
   --csv or -c: output as csv format
-  --csv-header or -H: header row for CSV output
-  --kilobytes or -k: kilobyte blocks instead of human units (always for CSV)
+  --csv-headers or -H: header row for CSV output
+  --kilobytes or -k: kilobyte blocks instead of human units (always set for CSV output)
+
+  Want recursive? How about:
+  find . -type d -name .git -exec git size --csv {} \;
+  (don't worry about a '/.git' suffix, that gets trimmed off, this works as you'd want)
 ```
 
 # LICENSE
