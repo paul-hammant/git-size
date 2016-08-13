@@ -63,11 +63,14 @@ total_size=$(du $fmt -d0 . | cut -f 1)
 size_of_ignored="0"
 if [ -f .gitignore ]; then
   # the perl one-liner removes files from stdin that don't exist. Should be a unix command 'pipefilesexist'
-  find . -type f -print0 | git check-ignore -z --stdin | perl -ne 'chomp(); if (-e $_) {print "$_\n"}' > .gitsize_ignored
-  if [ -s .gitsize_ignored ]; then
-    size_of_ignored=$(cat .gitsize_ignored | sed 's/.*/"&"/' | xargs -s 6000000 du -d0 -c $fmt | tail -1 | cut -f 1)
+  ignored=$(find . -type f | sed 's/.*/"&"/' | git check-ignore --stdin | perl -ne 'chomp(); if (-e $_) {print "$_\n"}' | sed 's#\./##' | sed 's/ /\ /')
+  while read -r line; do
+    fsize=$(du -k -d0 "$line" | tail -1 | cut -f 1)
+    size_of_ignored=$((size_of_ignored + fsize))
+  done <<< "$ignored"
+  if [ "$fmt" == "-h" ]; then
+    size_of_ignored=$(echo "${size_of_ignored}K")
   fi
-  rm .gitsize_ignored
 fi
 
 git ls-files | perl -ne 'chomp(); if (-e $_) {print "$_\n"}' > .gitsize_checkout
