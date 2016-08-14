@@ -93,7 +93,7 @@ recursive_or_single () {
             echo "directory_name,dot_git_folder_size,checkout_size,ignored_size,everything_size"
             csv_hdrs="0"
         fi
-        git_folders=$(find "$directory" -type d -name .git | sed 's/\.git$//' | sed 's#^\./##')
+        git_folders=$(find "$directory" -type d -name .git | sed 's#/\.git$##' | sed 's#^\./##')
         while read -r d2; do
             if [[ !  -z  "$d2"  ]]; then
                 process_single "$d2"
@@ -106,9 +106,7 @@ recursive_or_single () {
 }
 
 
-
-
-directory=$(pwd)
+directory=$(pwd | sed 's#/$##')
 csv_format="0"
 fmt="-h"
 recursive="0"
@@ -152,7 +150,7 @@ until [ -z $1 ]
             echo "Error, directory $directory not found"
             usage
         fi
-        directory=$(realpath "$directory")
+        directory=$(realpath "$directory" | sed 's#/$##')
         shift
         if [ "$#" -gt "0" ]; then
             leftOver="${leftOver} $@"
