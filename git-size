@@ -6,6 +6,8 @@ usage(){
   echo "  DIRNAME is optional - defaults to current directory"
   echo "  --csv or -c: output as csv format"
   echo "  --csv-headers or -H: header row for CSV output"
+  echo "  --sunburst or -s: generate hyperlink for sunburst visual"
+  echo "  --sunburst-html or -sh: generate HTML for sunburst visual"
   echo "  --recursive or -r: recurse looking for git clones/repos (always set for CSV output)"
   echo "  --kilobytes or -k: kilobyte blocks instead of human units (always set for CSV output)"
   exit 1
@@ -35,7 +37,7 @@ function sum_files {
     echo $ssize
 }
 
-process () {
+process_single () {
     # Can only go ahead if a git repo
     cd "$1"
     not_a_git_repo=$(git status . 2>&1 | grep "Not a git repository" | wc -l)
@@ -83,6 +85,27 @@ process () {
     fi
 }
 
+recursive_or_single () {
+    if [ "$recursive" -eq "1" ]; then
+        csv_format="1"
+        fmt="-k"
+        if [ "$csv_hdrs" -eq "1" ]; then
+            echo "directory_name,dot_git_folder_size,checkout_size,ignored_size,everything_size"
+            csv_hdrs="0"
+        fi
+        git_folders=$(find "$directory" -type d -name .git | sed 's/\.git$//' | sed 's#^\./##')
+        while read -r d2; do
+            if [[ !  -z  "$d2"  ]]; then
+                process_single "$d2"
+            fi
+        done <<< "$git_folders"
+    else
+      # non-recursive
+      process_single $directory
+    fi
+}
+
+
 
 
 directory=$(pwd)
@@ -90,6 +113,8 @@ csv_format="0"
 fmt="-h"
 recursive="0"
 csv_hdrs="0"
+sunburst="0"
+sunburst_html="0"
 leftOver=""
 until [ -z $1 ]
     do
@@ -103,8 +128,21 @@ until [ -z $1 ]
     elif [ "$1" == "--recursive" ] || [ "$1" == "-r" ]; then
         recursive="1"
         shift
+    elif [ "$1" == "--sunburst" ] || [ "$1" == "-s" ]; then
+        sunburst="1"
+        csv_hdrs="0"
+        csv_format="1"
+        shift
+    elif [ "$1" == "--sunburst-html" ] || [ "$1" == "-sh" ]; then
+        sunburst_html="1"
+        sunburst="1"
+        csv_hdrs="0"
+        csv_format="1"
+        shift
     elif [ "$1" == "--csv-headers" ] || [ "$1" == "-H" ]; then
-        csv_hdrs="1"
+        if [ "$sunburst" == "0" ]; then
+            csv_hdrs="1"
+        fi
         shift
     elif [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
         usage
@@ -128,21 +166,16 @@ if [ ! -z "${leftOver// }" ]; then
     usage
 fi
 
-if [ "$recursive" -eq "1" ]; then
-    csv_format="1"
-    fmt="-k"
-    if [ "$csv_hdrs" -eq "1" ]; then
-        echo "directory_name,dot_git_folder_size,checkout_size,ignored_size,everything_size"
-        csv_hdrs="0"
+if [ "$sunburst" -eq "1" ]; then
+    if [ "$sunburst_html" -eq "1" ]; then
+        echo "<html><body><a href=\""
     fi
-    git_folders=$(find "$directory" -type d -name .git | sed 's/\.git$//' | sed 's#^\./##')
-    while read -r d2; do
-        if [[ !  -z  "$d2"  ]]; then
-            d2op=$(process "$d2")
-            echo "$d2op"
-        fi
-    done <<< "$git_folders"
+    echo -n "http://localhost:8000/#"
+    recursive_or_single | base64 | tr -d '[\r\n]'
+    echo ""
+    if [ "$sunburst_html" -eq "1" ]; then
+        echo "\">See Sunburst Chart</a></body></html>"
+    fi
 else
-  # non-recursive
-  process $directory
+    recursive_or_single
 fi
