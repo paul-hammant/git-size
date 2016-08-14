@@ -66,19 +66,19 @@ function doit(ccol) {
 doit(ccol);
 
 d3.select("#col1").on("click", function() {
-  window.location.href = "/gitfolder.html#" + hash
+  window.location.href = "gitfolder.html#" + hash
 });
 
 d3.select("#col2").on("click", function() {
-  window.location.href = "/checkout.html#" + hash
+  window.location.href = "checkout.html#" + hash
 });
 
 d3.select("#col3").on("click", function() {
-  window.location.href = "/ignored.html#" + hash
+  window.location.href = "ignored.html#" + hash
 });
 
 d3.select("#col4").on("click", function() {
-  window.location.href = "/total.html#" + hash
+  window.location.href = "total.html#" + hash
 });
 
 
