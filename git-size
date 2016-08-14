@@ -83,10 +83,10 @@ process_single () {
         echo "  .git folder: $size_of_dot_git_folder"
         echo "  checkout: $size_of_checkout"
         echo "  ignored: $size_of_ignored"
-        echo "  everything: $total_size"
+        echo "  total: $total_size"
     else
         if [ "$csv_hdrs" -eq "1" ]; then
-            echo "directory_name,dot_git_folder_size,checkout_size,ignored_size,everything_size"
+            echo "directory_name,dot_git_folder_size,checkout_size,ignored_size,total_size"
         fi
         echo "\"$dir\",$size_of_dot_git_folder,$size_of_checkout,$size_of_ignored,$total_size"
     fi
@@ -97,7 +97,7 @@ recursive_or_single () {
         csv_format="1"
         fmt="-k"
         if [ "$csv_hdrs" -eq "1" ]; then
-            echo "directory_name,dot_git_folder_size,checkout_size,ignored_size,everything_size"
+            echo "directory_name,dot_git_folder_size,checkout_size,ignored_size,total_size"
             csv_hdrs="0"
         fi
         git_folders=$(find "$directory" -type d -name .git | sed 's#/\.git$##' | sed 's#^\./##')
