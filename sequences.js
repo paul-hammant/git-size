@@ -56,6 +56,13 @@ function stringToColour(str) {
   return colour;
 }
 
+function bytesToSize(bytes) {
+  var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  if (bytes == 0) return '0 Byte';
+  var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+  return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+}
+
 function doit(ccol) {
   var csv = d3.csv.parseRows(lines);
   var json = buildHierarchy(csv, ccol);
@@ -121,9 +128,10 @@ function createVisualization(json) {
 function mouseover(d) {
 
   var percentage = (100 * d.value / totalSize).toPrecision(3);
-  var percentageString = percentage + "%";
+  var breakdown = "   (" + bytesToSize(d.value * 1024) + " of " + bytesToSize(totalSize * 1024) + ")";
+  var percentageString = percentage + "% " + breakdown;
   if (percentage < 0.1) {
-    percentageString = "< 0.1%";
+    percentageString = "< 0.1% " + breakdown;
   }
 
   d3.select("#percentage")
