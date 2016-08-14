@@ -180,7 +180,7 @@ if [ "$sunburst" -eq "1" ]; then
     if [ "$sunburst_html" -eq "1" ]; then
         echo "<html><body><a href=\""
     fi
-    echo -n "http://localhost:8000/#"
+    echo -n "http://localhost:8000/total.html#"
     recursive_or_single | base64 | tr -d '[\r\n]'
     echo ""
     if [ "$sunburst_html" -eq "1" ]; then
