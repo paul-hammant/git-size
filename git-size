@@ -8,6 +8,7 @@ usage(){
   echo "  --csv-headers or -H: header row for CSV output"
   echo "  --sunburst or -s: generate hyperlink for sunburst visual"
   echo "  --sunburst-html or -sh: generate HTML for sunburst visual"
+  echo "  --absolute-paths or -ap: show absolute paths rather than relative"
   echo "  --recursive or -r: recurse looking for git clones/repos (always set for CSV output)"
   echo "  --kilobytes or -k: kilobyte blocks instead of human units (always set for CSV output)"
   exit 1
@@ -38,11 +39,17 @@ function sum_files {
 }
 
 process_single () {
+    dir="$1"
+    cd "$orig_directory"
+    if [ "$absolute_paths" -eq "1" ]; then
+        dir=$(realpath "$dir")
+    fi
+    cd "$dir"
+
     # Can only go ahead if a git repo
-    cd "$1"
     not_a_git_repo=$(git status . 2>&1 | grep "Not a git repository" | wc -l)
     if [ "$not_a_git_repo" -gt "0" ]; then
-        echo "Directory $1 isn't a Git repository/clone, can't run 'git size' there"
+        echo "Directory $dir isn't a Git repository/clone, can't run 'git size' there"
         exit 1
     fi
 
@@ -72,7 +79,7 @@ process_single () {
         else
             format=""
         fi
-        echo "$1: git size${format}:"
+        echo "$dir: git size${format}:"
         echo "  .git folder: $size_of_dot_git_folder"
         echo "  checkout: $size_of_checkout"
         echo "  ignored: $size_of_ignored"
@@ -81,7 +88,7 @@ process_single () {
         if [ "$csv_hdrs" -eq "1" ]; then
             echo "directory_name,dot_git_folder_size,checkout_size,ignored_size,everything_size"
         fi
-        echo "\"$1\",$size_of_dot_git_folder,$size_of_checkout,$size_of_ignored,$total_size"
+        echo "\"$dir\",$size_of_dot_git_folder,$size_of_checkout,$size_of_ignored,$total_size"
     fi
 }
 
@@ -106,10 +113,12 @@ recursive_or_single () {
 }
 
 
-directory=$(pwd | sed 's#/$##')
+orig_directory=$(pwd)
+directory="."
 csv_format="0"
 fmt="-h"
 recursive="0"
+absolute_paths="0"
 csv_hdrs="0"
 sunburst="0"
 sunburst_html="0"
@@ -137,6 +146,9 @@ until [ -z $1 ]
         csv_hdrs="0"
         csv_format="1"
         shift
+    elif [ "$1" == "--absolute-paths" ] || [ "$1" == "-ap" ]; then
+        absolute_paths="1"
+        shift
     elif [ "$1" == "--csv-headers" ] || [ "$1" == "-H" ]; then
         if [ "$sunburst" == "0" ]; then
             csv_hdrs="1"
@@ -145,12 +157,12 @@ until [ -z $1 ]
     elif [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
         usage
     else
-        directory=$(echo "$1")
+        directory="$1"
         if [ ! -d "$directory" ]; then
             echo "Error, directory $directory not found"
             usage
         fi
-        directory=$(realpath "$directory" | sed 's#/$##')
+        directory=$(echo "$directory" | sed 's#/$##')
         shift
         if [ "$#" -gt "0" ]; then
             leftOver="${leftOver} $@"
