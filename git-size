@@ -4,13 +4,13 @@ usage(){
   echo "Usage (v1.0.6):"
   echo "  git size --csv --csv-headers --kilobytes DIRNAME"
   echo "  DIRNAME is optional - defaults to current directory"
-  echo "  --csv or -c: output as csv format"
-  echo "  --csv-headers or -H: header row for CSV output"
-  echo "  --sunburst or -s: generate hyperlink for sunburst visual"
-  echo "  --sunburst-html or -sh: generate HTML for sunburst visual"
-  echo "  --absolute-paths or -ap: show absolute paths rather than relative"
-  echo "  --recursive or -r: recurse looking for git clones/repos (always set for CSV output)"
-  echo "  --kilobytes or -k: kilobyte blocks instead of human units (always set for CSV output)"
+  echo "  --csv or -c: output as csv format (optional)"
+  echo "  --csv-headers or -H: header row for CSV output (optional)"
+  echo "  --sunburst or -s: generate hyperlink for sunburst visual (optional)"
+  echo "  --sunburst-html or -sh: generate HTML for sunburst visual (optional)"
+  echo "  --absolute-paths or -ap: show absolute paths rather than relative (optional)"
+  echo "  --recursive or -r: recurse looking for git clones/repos (always set for CSV output, optional)"
+  echo "  --kilobytes or -k: kilobyte blocks instead of human units (always set for CSV output, optional)"
   exit 1
 }
 
