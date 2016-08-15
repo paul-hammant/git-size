@@ -4,7 +4,9 @@ This is a Bash command that, if in your path, will be part of the git command ec
 
 # Installation
 
-1. Copy `git-size` to `/usr/local/bin/`
+Mac and Linux compatible.
+
+1. Copy `git-size` to `/usr/local/bin/` or `/usr/bin/` as applicable
 2. make it executable 'chmod +x /usr/local/bin/git-slim', if it wasn't already.
 
 OR [via the Mac's homebrew](https://github.com/paul-hammant/homebrew-tap)
@@ -44,28 +46,24 @@ directory_name,dot_git_folder_size,checkout_size,ignored_size,everything_size
 
 ```
 $ git size --help
-Usage (v1.0.5):
+Usage (v1.0.6):
   git size --csv --csv-headers --kilobytes DIRNAME
   DIRNAME is optional - defaults to current directory
-  --csv or -c: output as csv format
-  --csv-headers or -H: header row for CSV output
-  --kilobytes or -k: kilobyte blocks instead of human units (always set for CSV output)
-
-  Want recursive? How about:
-  find . -type d -name .git -exec git size --csv {} \;
-  (don't worry about a '/.git' suffix, that gets trimmed off, this works as you'd want)
+  --csv or -c: output as csv format (optional)
+  --csv-headers or -H: header row for CSV output (optional)
+  --sunburst or -s: generate hyperlink for sunburst visual (optional)
+  --sunburst-html or -sh: generate HTML for sunburst visual (optional)
+  --absolute-paths or -ap: show absolute paths rather than relative (optional)
+  --recursive or -r: recurse looking for git clones/repos (always set for CSV output, optional)
+  --kilobytes or -k: kilobyte blocks instead of human units (always set for CSV output, optional)
 ```
 
 # LICENSE
 
 Copyright (c) 2016 Paul Hammant
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+Also simplified BSD 2-clause licensed (see LICENSE)
 
 # Contribtions
 
-Contributions welcome!
+Contributions welcome via pull-request.
