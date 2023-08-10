@@ -7,7 +7,7 @@ This is a Bash command that, if in your path, will be part of the git command ec
 Mac and Linux compatible.
 
 1. Copy `git-size` to `/usr/local/bin/` or `/usr/bin/` as applicable
-2. make it executable 'chmod +x /usr/local/bin/git-slim', if it wasn't already.
+2. make it executable 'chmod +x /usr/local/bin/git-size', if it wasn't already.
 
 OR [via the Mac's homebrew](https://github.com/paul-hammant/homebrew-tap)
 
@@ -27,7 +27,7 @@ $ git size
 
 If you'd done the clone with --no-checkout, the 29MB would have been saved, and the 36M would be closer to 6.7M.
 
-If you ran a build, 0B would be replaced with a few megabytes, as all that stuff isn't to be checked in (it is ignored).
+If you ran a build, 0B would be replaced with a few megabytes, as all that stuff isn't to be checked in (it is typically ignored).
 
 ## CSV output
 
