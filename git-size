@@ -15,14 +15,17 @@ usage(){
 }
 
 function kbytes_for_humans {
-    local -i kbytes=$1;
-    if [[ $kbytes -lt 1024 ]]; then
+    local -i bytes=$1;
+    if [[ $bytes -lt 1024 ]]; then
+        echo "${bytes}"
+    elif [[ $bytes -lt 1048576 ]]; then
+        kbytes=$(echo "scale=1; $bytes / 1024" | bc | sed 's/\.0//')
         echo "${kbytes}K"
-    elif [[ $kbytes -lt 1048576 ]]; then
-        megs=$(echo "scale=1; $kbytes / 1024" | bc | sed 's/\.0//')
+    elif [[ kbytes -lt 1073741824 ]]; then
+        megs=$(echo "scale=1; $bytes / (1024^2)" | bc | sed 's/\.0//')
         echo "${megs}M"
     else
-        gigs=$(echo "scale=1; $kbytes / (1024^2)" | bc | sed 's/\.0//')
+        gigs=$(echo "scale=1; $bytes / (1024^3)" | bc | sed 's/\.0//')
         echo "${gigs}G"
     fi
 }
@@ -55,21 +58,20 @@ process_single () {
 
     total_size=$(du $fmt -d0 . | cut -f 1 | sed 's/\.0//')
 
-    size_of_ignored="0"
-    if [ -f .gitignore ]; then
-        # the perl one-liner removes files from stdin that don't exist. Should be a unix command 'pipefilesexist'
-        ignored=$(find . -type f | sed 's/.*/"&"/' | git check-ignore --stdin | perl -ne 'chomp(); if (-e $_) {print "$_\n"}' | sed 's#^\./##' | sed 's/ /\ /')
-        size_of_ignored=$(sum_files "$ignored")
-        if [ "$fmt" == "-h" ]; then
-            size_of_ignored=$(kbytes_for_humans $size_of_ignored)
-        fi
+    git ls-files --ignored --exclude-standard -o | perl -ne 'chomp(); if (-e $_) {print "$_\n"}' > .ls-files
+    ignoredWithSizes=$(find . -printf "%p %s\n" | grep -F -f .ls-files)
+    size_of_ignored=$(echo "$ignoredWithSizes" | awk '{sum+=$2} END {print sum}')
+    if [ "$fmt" == "-h" ]; then
+        size_of_ignored=$(kbytes_for_humans $size_of_ignored)
     fi
 
-    checkout=$(git ls-files | perl -ne 'chomp(); if (-e $_) {print "$_\n"}')
-    size_of_checkout=$(sum_files "$checkout")
+    git ls-files | perl -ne 'chomp(); if (-e $_) {print "$_\n"}' > .ls-files
+    checkoutWithSizes=$(find . -printf "%p %s\n" | grep -F -f .ls-files)
+    size_of_checkout=$(echo "$checkoutWithSizes" | awk '{sum+=$2} END {print sum}')
     if [ "$fmt" == "-h" ]; then
         size_of_checkout=$(kbytes_for_humans $size_of_checkout)
     fi
+    rm .ls-files
 
     size_of_dot_git_folder=$(du $fmt -d0 .git | tail -1 | cut -f 1 | sed 's/\.0//')
 
@@ -175,7 +177,7 @@ if [ ! -z "${leftOver// }" ]; then
     echo "Unrecognized params/options: $leftOver"
     usage
 fi
-
+cd ..
 if [ "$sunburst" -eq "1" ]; then
     if [ "$sunburst_html" -eq "1" ]; then
         echo "<html><body><a href=\""
